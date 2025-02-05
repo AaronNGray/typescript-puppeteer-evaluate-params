@@ -17,7 +17,7 @@ async function main(url:string) {
         return;
     }
 
-    const handlerFunction = (doc:Document, context:any) => {
+    const handlerFunction = (doc:Document, dispatch:string, context:any) => {
         var match:HTMLElement|null;
         context.headerIndex = 0;
         while (++context.headerIndex < 10) {
@@ -26,9 +26,9 @@ async function main(url:string) {
         };
         return null;
     }
-    const context = {context: 'context'};
+    const context = {};
 
-    console.log("Header: ", await callHandler(page, handlerFunction, context));
+    console.log("Header: ", await callHandler(page, handlerFunction, "", context));
 
     if (page)
         await page.close;
@@ -38,16 +38,14 @@ async function main(url:string) {
 
 }
 
-function handlerCaller(handlerFunction:string, context:{}):Function {
+function handlerCaller(handlerFunction:string, dispatch:string, context:{}):Function {
     const fn = new Function('return ' + handlerFunction)();
-    return fn(document, context);
+    return fn(document, dispatch, context);
 }
 
 
-// evaluate<Params extends unknown[], Func extends EvaluateFunc<Params> = EvaluateFunc<Params>>(pageFunction: Func | string, ...args: Params): Promise<Awaited<ReturnType<Func>>>;
-
-async function callHandler(page:Page, handlerFunction:Function, context:{}):Promise<any> {
-    return page.evaluate(handlerCaller, handlerFunction.toString(), context);
+async function callHandler(page:Page, handlerFunction:Function, dispatch:string, context:{}):Promise<any> {
+    return page.evaluate(handlerCaller, handlerFunction.toString(), dispatch, context);
 }
 
 main('https://theguardian.com').catch(console.error);
