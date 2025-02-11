@@ -21,21 +21,29 @@ async function main(url:string) {
         var match:HTMLElement|null;
         context.headerIndex = 0;
         while (++context.headerIndex < 10) {
-            if (match = document.querySelector('h' + context.headerIndex))
+            if (match = (doc || document).querySelector('h' + context.headerIndex))
                 return match.innerText;
         };
         return null;
     }
+
+    console.log("" + handlerFunction);
+
     const context = {};
+//    const document = {};
 
     console.log("Header: ", await callHandler(page, handlerFunction, "", context));
+
+    const fn = new Function('return ' + handlerFunction)();
+    console.log("fn = ", fn.toString());
+    console.log("fn(document, \"\", context) = ", fn({}, "", context));
+
 
     if (page)
         await page.close;
 
     if (browser)
         await browser.close();
-
 }
 
 function handlerCaller(handlerFunction:string, dispatch:string, context:{}):Function {
